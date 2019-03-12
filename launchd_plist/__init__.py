@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import inspect
 import os
 import plistlib
 import public
@@ -54,24 +55,61 @@ KEYS = [
 ]
 
 
-def _mkdir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
+@public.add
+def read(path):
+    """return a dictionary with plist file data"""
+    if hasattr(plistlib, "load"):
+        return plistlib.load(open(path, 'rb'))
+    return plistlib.readPlist(path)
 
 
-def _mktouch(path):
-    _mkdir(os.path.dirname(path))
-    if not os.path.exists(path):
-        open(path, "w").write("")
+@public.add
+def write(path, data):
+    """write data dictionary to a plist file"""
+    path = os.path.abspath(os.path.expanduser(path))
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+    data = {k: v for k, v in data.items() if v is not None}
+    if hasattr(plistlib, "dump"):
+        plistlib.dump(data, open(path, 'wb'))
+    else:
+        plistlib.writePlist(data, path)
+
+
+@public.add
+def update(path, **kwargs):
+    """update plist file data"""
+    new = {}
+    if os.path.exists(path):
+        old = dict(read(path))
+        new = dict(old)
+    new.update(kwargs)
+    write(path, new)
+
+
+def isproperty(obj):
+    return isinstance(obj, property)
+
+
+def iscapitalized(string):
+    return string[0] != "_" and string[0] == string[0].upper() and string != string.upper()
 
 
 @public.add
 class Plist:
-    """launchd.plist generator"""
-    __readme__ = ["data", "load", "create"]
+    """launchd.plist class"""
 
     def __init__(self, **kwargs):
         self.update(kwargs)
+
+    def keys(self):
+        """return a list of object launchd.plist keys"""
+        attr_keys = list(self.__dict__.keys()) + list(self.__class__.__dict__.keys())
+        prop_keys = []
+        for name, member in inspect.getmembers(self.__class__):
+            if isinstance(member, property):
+                prop_keys.append(name)
+        return list(filter(iscapitalized, attr_keys + prop_keys))
 
     def update(self, *args, **kwargs):
         """Update the dictionary with the key/value pairs from other, overwriting existing keys"""
@@ -87,27 +125,25 @@ class Plist:
     def data(self):
         """return dictionary with launchd plist keys only"""
         result = dict()
-        for key in KEYS:
-            if hasattr(self, key):
-                value = getattr(self, key)
-                if value is not None:
-                    result[key] = value
+        for key in self.keys():
+            value = getattr(self, key)
+            if value is not None and value != [] and value != "":
+                result[key] = value
         return result
 
     def load(self, path):
         """load data from .plist file"""
-        data = plistlib.readPlist(path)
+        data = read(path)
         self.update(data)
         return self
 
     def create(self, path):
         """create .plist file"""
-        _mkdir(os.path.dirname(path))
-        plistlib.writePlist(self.data, path)
+        write(path, self.data)
         for key in ["StandardErrorPath", "StandardOutPath"]:
-            path = getattr(self, key, None)
-            if path:
-                _mktouch(path)
+            dirname = os.path.dirname(getattr(self, key, ""))
+            if dirname and not os.path.exists(dirname):
+                os.makedirs(dirname)
 
     def __contains__(self, key):
         """return hasattr(self,key)"""
@@ -126,3 +162,13 @@ class Plist:
 
     def __repr__(self):
         return self.__str__()
+
+
+class MyPlist(Plist):
+    Label = "MyPlist"
+    StartInterval = 1
+    Custom_key = "works for Capitalized keys!"
+
+    @property
+    def StandardErrorPath(self):
+        return os.path.expanduser("~/Logs/LaunchAgents/%s/err.log" % self.Label)
