@@ -57,7 +57,7 @@ KEYS = [
 
 @public.add
 def read(path):
-    """return a dictionary with plist file data"""
+    """return a dictionary with a plist file data"""
     if hasattr(plistlib, "load"):
         return plistlib.load(open(path, 'rb'))
     return plistlib.readPlist(path)
@@ -65,7 +65,7 @@ def read(path):
 
 @public.add
 def write(path, data):
-    """write data dictionary to a plist file"""
+    """write a dictionary to a plist file"""
     path = os.path.abspath(os.path.expanduser(path))
     if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
@@ -78,7 +78,7 @@ def write(path, data):
 
 @public.add
 def update(path, **kwargs):
-    """update plist file data"""
+    """update a plist file"""
     new = {}
     if os.path.exists(path):
         old = dict(read(path))

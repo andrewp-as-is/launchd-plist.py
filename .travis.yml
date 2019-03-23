@@ -13,4 +13,4 @@ after_failure:
 - chmod +x send.sh
 - ./send.sh failure $WEBHOOK_URL
 install: curl -fLs https://git.io/fpfTa | bash -s
-script: curl -fLs https://git.io/fpfTw | bash -s
+script: true

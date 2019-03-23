@@ -2,6 +2,7 @@
 https://pypi.org/project/readme-generator/
 -->
 
+[![](https://img.shields.io/badge/OS-MacOS-blue.svg?longCache=True)]()
 [![](https://img.shields.io/pypi/pyversions/launchd-plist.svg?longCache=True)](https://pypi.org/project/launchd-plist/)
 [![](https://img.shields.io/pypi/v/launchd-plist.svg?maxAge=3600)](https://pypi.org/project/launchd-plist/)
 [![Travis](https://api.travis-ci.org/looking-for-a-job/launchd-plist.py.svg?branch=master)](https://travis-ci.org/looking-for-a-job/launchd-plist.py/)
@@ -22,9 +23,9 @@ class|`__doc__`
 #### Functions
 function|`__doc__`
 -|-
-`launchd_plist.read(path)` |return a dictionary with plist file data
-`launchd_plist.update(path, **kwargs)` |update plist file data
-`launchd_plist.write(path, data)` |write data dictionary to a plist file
+`launchd_plist.read(path)` |return a dictionary with a plist file data
+`launchd_plist.update(path, **kwargs)` |update a plist file
+`launchd_plist.write(path, data)` |write a dictionary to a plist file
 
 #### Examples
 ```python
