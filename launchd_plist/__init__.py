@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+__all__ = ["read", "write", 'update', 'Plist']
+
+
 import inspect
 import os
 import plistlib
-import public
 
 
 """
@@ -55,7 +56,6 @@ KEYS = [
 ]
 
 
-@public.add
 def read(path):
     """return a dictionary with a plist file data"""
     if hasattr(plistlib, "load"):
@@ -63,7 +63,6 @@ def read(path):
     return plistlib.readPlist(path)
 
 
-@public.add
 def write(path, data):
     """write a dictionary to a plist file"""
     path = os.path.abspath(os.path.expanduser(path))
@@ -76,7 +75,6 @@ def write(path, data):
         plistlib.writePlist(data, path)
 
 
-@public.add
 def update(path, **kwargs):
     """update a plist file"""
     new = {}
@@ -95,7 +93,6 @@ def iscapitalized(string):
     return string[0] != "_" and string[0] == string[0].upper() and string != string.upper()
 
 
-@public.add
 class Plist:
     """launchd.plist class"""
 
@@ -104,7 +101,8 @@ class Plist:
 
     def keys(self):
         """return a list of object launchd.plist keys"""
-        attr_keys = list(self.__dict__.keys()) + list(self.__class__.__dict__.keys())
+        attr_keys = list(self.__dict__.keys()) + \
+            list(self.__class__.__dict__.keys())
         prop_keys = []
         for name, member in inspect.getmembers(self.__class__):
             if isinstance(member, property):
@@ -162,13 +160,3 @@ class Plist:
 
     def __repr__(self):
         return self.__str__()
-
-
-class MyPlist(Plist):
-    Label = "MyPlist"
-    StartInterval = 1
-    Custom_key = "works for Capitalized keys!"
-
-    @property
-    def StandardErrorPath(self):
-        return os.path.expanduser("~/Logs/LaunchAgents/%s/err.log" % self.Label)
